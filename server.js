@@ -19,7 +19,14 @@ const wss = new SocketServer({ server });
 // Set up a callback that will run when a client connects to the server
 // When a client connects they are assigned a socket, represented by
 // the ws parameter in the callback.
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
 var usersOnline = 0;
+var colorList = ['blue', 'green', 'red', 'black'];
 
 wss.broadcast = function broadcast(data) {
   wss.clients.forEach(function each(client) {
@@ -35,6 +42,10 @@ wss.on('connection', (ws) => {
   console.log('Client connected');
   usersOnline += 1;
   wss.broadcast(JSON.stringify({'type': 'usersOnline', 'usersOnline': usersOnline}));
+
+  var randomColor = colorList[getRandomInt(0, colorList.length -1)];
+  console.log('COLOR', randomColor);
+  ws.send(JSON.stringify({type: "colorAssign", color: randomColor}));
 
   ws.on('message', function incoming(message) {
     message = JSON.parse(message);
@@ -60,6 +71,6 @@ wss.on('connection', (ws) => {
     console.log('Client disconnected');
     usersOnline -= 1;
     wss.broadcast(JSON.stringify({'type': 'usersOnline', 'usersOnline': usersOnline}));
-
   });
+
 });
